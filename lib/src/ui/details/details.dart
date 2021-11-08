@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity/connectivity.dart';
+import 'package:translator/translator.dart';
 
 class DetailPage extends StatefulWidget {
   final ZodiacSign sign;
@@ -15,12 +16,15 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
+  final translator = GoogleTranslator(); //加了這行!
+  var afterTrans; //加了這行!
   AnimationController _controller;
   final List<String> timeSpans = ["Today", "Week", "Month", "Year"];
   String selectedSpan = "Today";
 
-  Future<List<String>> getData() async {
-    List<String> info = ["", ""];
+  Future<List<dynamic>> getData() async {
+    var info = ["", ""];
+
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       info[0] = "Please Check your Internet Connection and Try Again.";
@@ -35,6 +39,12 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
       },
     );
     Map<String, dynamic> data = json.decode(response.body);
+    String horo = data['horoscope']; //加了這行!
+
+    afterTrans = await translator.translate(horo, to: 'zh-tw'); //加了這行!
+
+    // translator.translate(data, from: 'en', to: 'zh-cn');
+
     switch (selectedSpan) {
       case "Today":
         info[0] = data["date"];
@@ -50,7 +60,9 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
         break;
       default:
     }
-    info[1] = data["horoscope"];
+
+    info[1] = afterTrans.toString(); //加了這行!
+
     return info;
   }
 
@@ -61,7 +73,6 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
-
     getData();
   }
 
@@ -103,7 +114,7 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
             ),
             Padding(
               padding: EdgeInsets.only(top: 20.0),
-              child: FutureBuilder<List<String>>(
+              child: FutureBuilder<List<dynamic>>(
                 future: getData(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
@@ -135,7 +146,7 @@ class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.all(25),
-                    child: FutureBuilder<List<String>>(
+                    child: FutureBuilder<List<dynamic>>(
                       future: getData(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {

@@ -56,7 +56,7 @@ class _MainMenuState extends State<MainMenu> {
                   itemCount: 12,
                   itemWidth: 300.0,
                   itemHeight: 450.0,
-                  layout: SwiperLayout.TINDER,
+                  layout: SwiperLayout.STACK,
                 ),
               ),
             ),
